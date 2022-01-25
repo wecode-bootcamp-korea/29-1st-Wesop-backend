@@ -14,7 +14,7 @@ class User_detail(models.Model) :
     
     class Meta :
         db_table = 'user_details'
-
+        
 class Address(models.Model) :
     nation_code = models.CharField(max_length=10, blank = True)
     city = models.CharField(max_length=100, blank = True)

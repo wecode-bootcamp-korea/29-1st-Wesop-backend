@@ -13,7 +13,7 @@ class SubCategory(Base):
     main_category = models.ForeignKey(MainCategory, on_delete=models.CASCADE)
 
     class Meta:
-        db_table = 'sub_catogries'
+        db_table = 'sub_categories'
 
 class Product(Base):
     name            = models.CharField(max_length=200)

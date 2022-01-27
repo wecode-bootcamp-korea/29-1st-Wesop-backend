@@ -23,3 +23,6 @@ class Address(Base) :
 
     class Meta :
         db_table    = 'addresses'
+
+class ValidEmail(Base) :
+    form_text = models.CharField(max_length=100, blank=False)

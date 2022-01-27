@@ -23,9 +23,9 @@ class Product(Base):
 
     class Meta:
         db_table = 'products'
-
+      
 class ProductOption(Base):
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='products_options')
     size    = models.CharField(max_length=30)
     price   = models.DecimalField(null=True, default=0, decimal_places=3, max_digits=9)
 
@@ -39,8 +39,8 @@ class KeyIngredient(Base):
         db_table = 'key_ingredients'
 
 class ProductIngredient(Base):
-    ingredients = models.ForeignKey(KeyIngredient, on_delete=models.CASCADE)
-    product     = models.ForeignKey(Product, on_delete=models.CASCADE)
+    ingredients = models.ForeignKey(KeyIngredient, on_delete=models.CASCADE, related_name='key_ingredients')
+    product     = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='products')
 
     class Meta:
         db_table = 'products_ingredients'

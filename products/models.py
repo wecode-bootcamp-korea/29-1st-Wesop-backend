@@ -15,22 +15,21 @@ class SubCategory(Base):
     class Meta:
         db_table = 'sub_categories'
 
+class Product(Base):
+    name            = models.CharField(max_length=200)
+    description     = models.TextField()
+    ingredients_etc = models.TextField()
+    sub_category    = models.ForeignKey(SubCategory, on_delete=models.CASCADE)
+
+    class Meta:
+        db_table = 'products'
+      
 class KeyIngredient(Base):
     name       = models.CharField(max_length=100)
 
     class Meta:
         db_table = 'key_ingredients'
 
-class Product(Base):
-    name            = models.CharField(max_length=200)
-    description     = models.TextField()
-    ingredients_etc = models.TextField()
-    sub_category    = models.ForeignKey(SubCategory, on_delete=models.CASCADE)
-    ingredint       = models.ManyToManyField(KeyIngredient)
-
-    class Meta:
-        db_table = 'products'
-      
 class ProductOption(Base):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='products_options')
     size    = models.CharField(max_length=30)
@@ -40,8 +39,8 @@ class ProductOption(Base):
         db_table = 'products_options'
 
 class ProductIngredient(Base):
-    ingredient = models.ForeignKey(KeyIngredient, on_delete=models.CASCADE, related_name='key_ingredients')
-    product     = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='products')
+    ingredient = models.ForeignKey(KeyIngredient, on_delete=models.CASCADE, related_name='ingredient_id')
+    product    = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='product_key_ingredient')
 
     class Meta:
         db_table = 'products_ingredients'
@@ -53,7 +52,7 @@ class Skintype(Base):
         db_table = 'skintypes'
 
 class ProductSkintype(Base):
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='product_skin_type')
     skin    = models.ForeignKey(Skintype, on_delete=models.CASCADE)
 
     class Meta:

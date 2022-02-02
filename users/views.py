@@ -102,10 +102,10 @@ class SignUpView (View) :
             REG_PASS = r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[$@$!%*#?&])[A-Za-z\d$@$!%*#?&]{8,}$'
             REG_EMAIL = r'^[a-zA-Z0-9+-_.]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
             
-            first_name = input_data['first-name']
             last_name = input_data['last-name']
+            first_name = input_data['first-name']
             
-            name = first_name + '^' + last_name
+            name = last_name + '^' + first_name
             
             #이미 가입된 이메일인가?
             if not re.fullmatch(REG_EMAIL, email) :

@@ -153,10 +153,11 @@ class LoginView (View) :
             
             if bcrypt.checkpw(login_para['password'].encode('utf-8'), user.password.encode('utf-8')):
                 access_token = jwt.encode({'id': user.id}, SECRET_KEY, algorithm = ALGORITHM)
-                return JsonResponse({'ACCESS_TOKEN' : access_token }, status = 200)
+                ## 로그인 성공시, 유저이름과 카트 정보를 줌(배열의 갯수)
+                return JsonResponse({ 'message': 'SUCCESS','ACCESS_TOKEN' : access_token}, status = 200)
             else :
                 return JsonResponse({"message": "로그인 실패"}, status = 401)
-        
+
         except KeyError :
             return JsonResponse({"message": "KEY_ERROR"}, status = 400)
         except ValueError :

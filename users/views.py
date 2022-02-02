@@ -45,16 +45,16 @@ class CheckEmailView(View) :
             email_data  = json.loads(request.body)
             email = email_data['email']
             REG_EMAIL = r'^[a-zA-Z0-9+-_.]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
-
+            print(request.body)
             if email == '' :
-                return JsonResponse({"message" : "이메일 값 없음(email 키는 존재)"}, status = 400)
+                return JsonResponse({"message" : "이메일을 입력하세요"}, status = 400)
                         
             if not re.fullmatch(REG_EMAIL, email) : 
-                return JsonResponse({"message" : "INVALID_EMAIL-잘못된 형식"}, status = 401)
+                return JsonResponse({"message" : "잘못된 형식의 이메일 입니다"}, status = 401)
 
             if User.objects.filter(email = email).exists() : 
-                return JsonResponse({"message" : "이미 존재하는 회원"}, status = 200)
-            return JsonResponse({"message" : "유효한 이메일, 가입가능 "}, status  = 200)
+                return JsonResponse({"message" : "이미 존재하는 회원", "sign-in" : 1}, status = 200)
+            return JsonResponse({"message" : "유효한 이메일, 가입가능 ", "sign-in" : 0}, status  = 200)
         except KeyError :
             return JsonResponse({"message" : "email 키 없음"}, status = 400)
         except IndexError :

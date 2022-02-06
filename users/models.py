@@ -3,7 +3,7 @@ from bases.models import Base
 from products.models import Skintype
 
 class User(Base) :
-    email           = models.EmailField(max_length=255, unique=True)
+    email           = models.EmailField(max_length=250, unique=True)
     password        = models.CharField(max_length=250)
     name            = models.CharField(max_length=200)
     phone           = models.CharField(max_length=45, blank=True)

@@ -1,3 +1,4 @@
+from pickletools import long1
 import re
 import json
 
@@ -31,11 +32,20 @@ def validate_cartdata(func) :
     return wrapper
 
 def validate_quantity(func) :
+    REX_INTEGER = r'^[+]{0,1}\d+$'
     def wrapper(self , request) :
         try :
             data        = json.loads(request.body)
             data        = data["message"]
             quantity    = str(data["product_count"])
+
+            if not re.fullmatch(REX_INTEGER,quantity) :
+                return JsonResponse({"message" : "VALUE_EROOR"}, status = 400)
+
+            check_integer = int(quantity)
+            if check_integer <= 0 or check_integer > 4294967295 : 
+                return JsonResponse({"message" : "INVALID_QUANTITY_RANGE"}, status = 400)
+        
         except json.JSONDecodeError :
             return JsonResponse({"message" : "INVALID_BODY_REQEUST"}, status = 400)
         except KeyError :

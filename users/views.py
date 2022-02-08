@@ -48,7 +48,6 @@ def validate_passoword(func) :
         return func(self, request)
     return wrapper
 
-
 class EmailValidView (View):
     @validate_email
     def post(self, request):
@@ -58,7 +57,6 @@ class EmailValidView (View):
             return JsonResponse({"message" : "ALREADY_JOIN_USER"}, status = 404)
         
         return JsonResponse({"message" : "JOIN_POSSIBLE"}, status  = 200)
-
 
 class SignUpView (View) :
     @validate_email
@@ -87,7 +85,6 @@ class SignUpView (View) :
 
         except json.JSONDecodeError :
             return JsonResponse({"message" : "INVALID_REQUEST_BODY"}, status = 400)
-
 
 class LoginView (View) :
     @validate_email

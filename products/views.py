@@ -6,7 +6,10 @@ from django.http import JsonResponse
 
 from .models import MainCategory, SubCategory, Product
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> 798c0e181ead8e286d04d738225b1d09b9491ea1
 
 class MainCategoryView(View):
     def post(self, request):
@@ -65,6 +68,7 @@ class ProductListView(View):
 
                 result = [
                     {
+<<<<<<< HEAD
 <<<<<<< HEAD
                     "sub_category_id"         : product.sub_category.id,
                     "sub_category_name"       : product.sub_category.name,
@@ -167,6 +171,8 @@ class ProductView(View):
         except Product.DoesNotExist:
             return JsonResponse({"message": "PROUDCT_DOES_NOT_EXIST"}, status=400)
 =======
+=======
+>>>>>>> 798c0e181ead8e286d04d738225b1d09b9491ea1
                         "name"             : product.name,
                         "description"      : product.description,
                         "ingredients_etc"  : product.ingredients_etc,

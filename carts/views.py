@@ -3,7 +3,7 @@ import json
 from django.http import JsonResponse
 from django.views import View
 
-from cart.models import Cart
+from carts.models import Cart
 from products.models import Product
 
 class AddCartView(View) :

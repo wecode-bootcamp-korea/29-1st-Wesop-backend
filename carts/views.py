@@ -1,4 +1,3 @@
-from pickletools import long1
 import re
 import json
 
@@ -40,7 +39,7 @@ def validate_quantity(func) :
             quantity    = str(data["product_count"])
 
             if not re.fullmatch(REX_INTEGER,quantity) :
-                return JsonResponse({"message" : "VALUE_EROOR"}, status = 400)
+                return JsonResponse({"message" : "INVALID_VALUE"}, status = 400)
 
             check_integer = int(quantity)
             if check_integer <= 0 or check_integer > 4294967295 : 
@@ -52,6 +51,14 @@ def validate_quantity(func) :
             return JsonResponse({"message" : "KEY_ERROR"}, status = 400)      
         return func(self, request)
     return wrapper
+
+class GetCartListView(View) :
+    def get(self, request, user_id) :
+
+        user = user_id
+        cart = Cart.objects.filter(user_id = user).all().select_related('product').all().select_related('product').all()
+        print (cart[0].product.product.name)
+        return JsonResponse({"message" : "test"}, status = 200)
 
 class AddCartView(View) :
     @validate_cartdata
@@ -93,7 +100,7 @@ class UpdateCartView (View) :
                 obj.quantity = data["product_count"]
                 obj.save()
                 return JsonResponse({"message" : "SECCESS_UPDATE_CART"},status= 201)
-
+            
             return JsonResponse({"message" : "SUCCESS_ADD_CART"},status= 201)
         except KeyError :
             return JsonResponse({"message" : "KEY_ERROR"},status= 400)

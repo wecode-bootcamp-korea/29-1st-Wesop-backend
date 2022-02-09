@@ -1,6 +1,7 @@
 import uuid
 
 from django.db import models
+
 from products.models import Product
 from users.models import User
 from bases.models import Base

@@ -3,12 +3,12 @@ from bases.models import Base
 from products.models import Skintype
 
 class User(Base) :
-    email           = models.EmailField(max_length=255, unique=True)
+    email           = models.EmailField(max_length=250, unique=True)
     password        = models.CharField(max_length=250)
     name            = models.CharField(max_length=200)
     phone           = models.CharField(max_length=45, blank=True)
     receive_letter  = models.BooleanField(default=False)
-    skintype        = models.ForeignKey(Skintype, on_delete=models.CASCADE)
+    skintype        = models.ForeignKey(Skintype, on_delete=models.CASCADE, null=True)
 
     class Meta :
         db_table    = 'users'
@@ -23,3 +23,9 @@ class Address(Base) :
 
     class Meta :
         db_table    = 'addresses'
+
+class ValidEmail(Base) :
+    form_text       = models.CharField(max_length=100, blank=False)
+    
+    class Meta :
+        db_table    = 'validemails'

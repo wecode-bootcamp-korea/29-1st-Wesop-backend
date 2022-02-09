@@ -50,10 +50,10 @@ class ProductListView(View):
                 q.add(Q(product_key_ingredient__ingredient__name__in=ingredient), q.AND)
 
             products = Product.objects.filter(q).distinct()
-            
+
             if sort:
                 if sort == '최신 상품 순':
-                    products = products.order_by('-created_at')
+                    products = products.order_by('created_at')
                 elif sort == '인기순':
                     products = products.order_by('-products_options__stock')
                 elif sort == "높은 가격 순":
@@ -70,6 +70,7 @@ class ProductListView(View):
                         "product_description"   : product.description,
                         "product_ingredient_etc": product.ingredients_etc,
                         "product_id"            : product.id,
+                        "product_image_url"     : product.image_url,
                         "product_detail"        : [
                             {
                                 "product_option_id" : product_option.id,
@@ -85,7 +86,6 @@ class ProductListView(View):
                         ],
                     }
                 } for product in products]
-
             return JsonResponse({"message": result}, status=200)
         except KeyError:
             return JsonResponse({"message": "KEY_ERROR"}, status=400)
@@ -104,6 +104,7 @@ class ProductView(View):
                 "sub_category_name"       : product.sub_category.name,
                 "sub_category_desciprtion": product.sub_category.description,
                 "product_id"              : product.id,
+                "product_image_url"       : product.image_url,
                 "product_detail"          : [
                     {
                         "product_option_id" : product_option.id,

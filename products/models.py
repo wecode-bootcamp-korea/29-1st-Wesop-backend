@@ -20,6 +20,7 @@ class Product(Base):
     description     = models.TextField()
     ingredients_etc = models.TextField()
     sub_category    = models.ForeignKey(SubCategory, on_delete=models.CASCADE)
+    image_url       = models.CharField(max_length=250)
 
     class Meta:
         db_table = 'products'

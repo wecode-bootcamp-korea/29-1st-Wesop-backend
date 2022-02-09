@@ -1,6 +1,8 @@
-from itertools import product
+from os import access
 import re
 import json
+from tokenize import Pointfloat
+import jwt
 
 from django.http import JsonResponse
 from django.views import View
@@ -8,7 +10,9 @@ from django.db.models import F
 
 from carts.models import Cart
 from users.models import User
-from products.models import ProductOption
+from products.models import Product, ProductOption
+
+from django.conf import settings
 
 def validate_cartdata(func) :
     def wrapper(self, request) :
@@ -54,7 +58,37 @@ def validate_quantity(func) :
         return func(self, request,**kargs)
     return wrapper
 
+def login_user(func) :
+    def wrapper (self, request,**kargs) :
+        try :
+            print(**kargs)
+            token   = kargs['token']
+            print(token)
+            user    = jwt.decode(token,settings.SECRET_KEY, algorithm = settings.ALGORITHM)
+            if not User.objects.filter(id = user['id']).exists() :
+                return JsonResponse({"message" : "INVALID_USER"}, status = 401) 
+            return func(self, request, **kargs)
+        except User.DoesNotExist :
+            return JsonResponse({"message" : "INVALID_USER"}, status = 401)
+        except KeyError :
+            return JsonResponse({"message" : "KEY_ERROR"}, status = 401)
+    return wrapper
+
+def validate_product(func) :
+    def wrapper(self, request,*args, **kargs):
+        print(kargs)
+        print(args)
+        try :
+            product_id =  kargs['product_options_id']
+            if not ProductOption.objects.filter(id = product_id).exists() :
+                return JsonResponse({"message" : "INVALID_PRODUCT"}, status=404)
+            return func(self, request,*args, **kargs)
+        except KeyError :
+            return JsonResponse({"message" : "KEY_ERROR"},status=400)
+    return wrapper
+
 class GetCartListView(View) :
+    @login_user
     def get(self, request, user_id) :
 
         user    = user_id
@@ -147,7 +181,6 @@ class UpdateCartView (View) :
             return JsonResponse({"message" : "KEY_ERROR"},status= 400)
 
 class DeleteCartView (View) :
-    
     @validate_cartdata
     def post(self, request) :
         try :

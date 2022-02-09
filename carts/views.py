@@ -1,3 +1,4 @@
+from itertools import product
 import re
 import json
 
@@ -7,7 +8,7 @@ from django.db.models import F
 
 from carts.models import Cart
 from users.models import User
-from products.models import Product, ProductOption
+from products.models import ProductOption
 
 def validate_cartdata(func) :
     def wrapper(self, request) :
@@ -17,8 +18,9 @@ def validate_cartdata(func) :
             
             user_id             = data["user_id"]
             product_option_id   = data["product_options_id"]
-            user    =  User.objects.get(id = user_id)
-            product_option = ProductOption.objects.get(id = product_option_id)
+            user            =  User.objects.get(id = user_id)
+            product_option  = ProductOption.objects.get(id = product_option_id)
+        
         except json.JSONDecodeError :
             return JsonResponse({"message" : "INVALID_BODY_REQEUST"}, status = 400)
         except KeyError :
@@ -32,7 +34,7 @@ def validate_cartdata(func) :
 
 def validate_quantity(func) :
     REX_INTEGER = r'^[+]{0,1}\d+$'
-    def wrapper(self , request) :
+    def wrapper(self , request,**kargs) :
         try :
             data        = json.loads(request.body)
             data        = data["message"]
@@ -49,59 +51,98 @@ def validate_quantity(func) :
             return JsonResponse({"message" : "INVALID_BODY_REQEUST"}, status = 400)
         except KeyError :
             return JsonResponse({"message" : "KEY_ERROR"}, status = 400)      
-        return func(self, request)
+        return func(self, request,**kargs)
     return wrapper
 
 class GetCartListView(View) :
     def get(self, request, user_id) :
 
-        user = user_id
-        cart = Cart.objects.filter(user_id = user).all().select_related('product').all().select_related('product').all()
-        print (cart[0].product.product.name)
-        return JsonResponse({"message" : "test"}, status = 200)
+        user    = user_id
+        items   = Cart.objects.filter(user_id = user).all().select_related('product').all().select_related('product').all()
+        
+        result = dict()
+        result['user_id'] = user
+        result['products'] = list()
+
+        product = [
+            {
+            "product_options_id" : item.product.id,
+            "product_name"       : item.product.product.name,
+            "product_size"       : item.product.size,
+            "product_count"      : item.quantity,
+            "product_price"      : int(item.product.price)
+            }for item in items  
+        ]
+        result['products'] = product
+        result['message'] = "SUCCESS"
+
+        return JsonResponse(result, status = 200)
 
 class AddCartView(View) :
     @validate_cartdata
     def post (self, request) :
         try :
             data            = json.loads(request.body)['message']
+            
             obj, create     = Cart.objects.get_or_create(
-                user_id  =  data['user_id'] , 
-                product_id = data['product_options_id']
+                user_id     =  data['user_id'] , 
+                product_id  = data['product_options_id']
                 )
             
-            ##여기에 json response 작성하기 
             result = dict()
-            result["result"] = "SUCCESS"
+            
             if not create:
                 obj.quantity = F('quantity') + 1
                 obj.save()
-                return JsonResponse({"message" : "SECCESS_UPDATE_CART"},status= 201)
+                result['result'] = "SUCCESS_UPDATE"
+                return JsonResponse(result,status= 201)
             
-            return JsonResponse({"message" : "SUCCESS_ADD_CART"},status= 201)
+            item = Cart.objects.filter(product_id = data['product_options_id']).select_related('product').select_related('product').get()
+            
+            product = {
+                "product_options_id" : item.product.id,
+                "product_name"       : item.product.product.name,
+                "product_size"       : item.product.size,
+                "product_count"      : item.quantity,
+                "product_price"      : int(item.product.price)
+            }
+            
+            result["product"] = product
+            result["result"] = "SUCCESS"
+            
+            return JsonResponse(result,status= 201)
+        
         except KeyError :
             return JsonResponse({"message" : "KEY_ERROR"},status= 400)
+        except AttributeError :
+            return JsonResponse({"message" : "SERVER_ERROR"},status= 500)
 
 class UpdateCartView (View) :
-    @validate_cartdata
     @validate_quantity
-    def post(self, request) :
+    def patch(self, request, user_id, product_id) :
         try :
+            user = user_id
+            product = product_id
             data            = json.loads(request.body)['message']
             
             obj, created    = Cart.objects.update_or_create( 
-                            user_id=data['user_id'], 
-                            product_id=data['product_options_id']
-                            )
+                        user_id     = user, 
+                        product_id  =product
+            )
+
             result = dict()
-            result["result"] = "SUCCEESS"
+            result["product_count"] = data["product_count"]
             
             if not created:
-                obj.quantity = data["product_count"]
+                obj.quantity        = data["product_count"]
                 obj.save()
-                return JsonResponse({"message" : "SECCESS_UPDATE_CART"},status= 201)
+                
+                result["result"]    = "SUCCEESS"
+                return JsonResponse(result,status= 201)
             
-            return JsonResponse({"message" : "SUCCESS_ADD_CART"},status= 201)
+            result["result"]        = "SUCCEESS"
+            return JsonResponse(result,status= 201)
+        
         except KeyError :
             return JsonResponse({"message" : "KEY_ERROR"},status= 400)
 

@@ -3,29 +3,9 @@ import re
 
 from django.views import View
 from django.http import JsonResponse
+from django.db.models import Q
 
 from .models import MainCategory, SubCategory, Product
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-=======
->>>>>>> 798c0e181ead8e286d04d738225b1d09b9491ea1
-
-class MainCategoryView(View):
-    def post(self, request):
-        data = json.load(request.body)
-
-        try:
-            name = data["name"]
-            MainCategory.objects.create(
-                name = name
-            )
-            return JsonResponse({"message":"SUCCESS"}, status=201)
-        except KeyError as e:
-            return JsonResponse({"message":"KEY_ERROR"}, status=400)
-        except:
-            return JsonResponse({"message":"FAILED"}, status=400)  
->>>>>>> e4d43012ba5cfe4b8fb8d5787b210d8d221fa386
 
 class MainCategoryListView(View):
     def get(self, request):
@@ -50,83 +30,67 @@ class SubCategoryListView(View):
             return JsonResponse({"message": "KEY_ERROR"}, status=400)
 
 class ProductListView(View):
-    def get(self, request):
+    def get(self, request, *args, **kwargs):
         try:
-<<<<<<< HEAD
-            if request.GET.get('categoryId'):
-                sub_category_id = request.GET.get('categoryId')
+            sub_category_id   = request.GET.get('categoryId', None)
+            skin_type         = request.GET.getlist('skinType', None)
+            ingredient        = request.GET.getlist('ingredient', None)
+            sort              = request.GET.get('sortBy', None)
 
-                if int(sub_category_id) <= len(SubCategory.objects.all()):
-                    products = Product.objects.filter(sub_category_id=sub_category_id)
-                else:
-                    raise Exception('CATEGORY_DOES_NOT_EXIST')
-=======
-            sub_category_products = Product.objects.filter(sub_category_id=sub_category_id)
-            print(list(sub_category_products))
-            requested_sub_category_products = []
->>>>>>> e4d43012ba5cfe4b8fb8d5787b210d8d221fa386
+            q = Q()
 
-                result = [
-                    {
-<<<<<<< HEAD
-<<<<<<< HEAD
-                    "sub_category_id"         : product.sub_category.id,
-                    "sub_category_name"       : product.sub_category.name,
-                    "sub_category_description": product.sub_category.description,
-                    "products"                : [{
-                                "product_name"          : product.name,
-                                "product_description"   : product.description,
-                                "product_ingredient_etc": product.ingredients_etc,
-                                "product_id"            : product.id,
-                                "product_detail"        : [
-                                    {
-                                        "size"      : product_option.size,
-                                        "price"     : product_option.price,
-                                    } for product_option in product.products_options.all()
-                                ],
-                                "key_ingredient": [
-                                key_ingredient.ingredient.name for key_ingredient in product.product_key_ingredient.all()
-                                ],
-                                "skin_type" : [
-                                skin_type.skin.name for skin_type in product.product_skin_type.all()
-                                ],
-                            }]
-                    } for product in products]
+            if sub_category_id != None:
+                SubCategory.objects.get(id=sub_category_id)
+                q.add(Q(sub_category=sub_category_id), q.AND)
 
-            sub_categories = SubCategory.objects.all()
-            result = []
-            products   = [{
-                    "sub_category_id"         : sub_category.id,
-                    "sub_category_name"       : sub_category.name,
-                    "sub_category_description": sub_category.description,
-                    "products"                : [
-                        {
-                            "product_name"          : product.name,
-                            "product_description"   : product.description,
-                            "product_ingredient_etc": product.ingredients_etc,
-                            "product_id"            : product.id,
-                            "product_detail"        : [
-                                {
-                                    "size" : product_option.size,
-                                    "price": product_option.price,
-                                } for product_option in product.products_options.all()
-                            ],
-                    "key_ingredient"         : [
-                        key_ingredient.ingredient.name for key_ingredient in product.product_key_ingredient.all()
-                    ],
-                    "skin_type"              : [
-                        skin_type.skin.name for skin_type in product.product_skin_type.all()
-                    ],
-                        } for product in Product.objects.filter(sub_category_id=sub_category.id)
-                    ],
-            } for sub_category in sub_categories]
-            result = products
+            if skin_type:
+                q.add(Q(product_skin_type__skin__name__in=skin_type), q.AND)
+
+            if ingredient:
+                q.add(Q(product_key_ingredient__ingredient__name__in=ingredient), q.AND)
+
+            products = Product.objects.filter(q).distinct()
             
+            if sort:
+                if sort == '최신 상품 순':
+                    products = products.order_by('-created_at')
+                elif sort == '인기순':
+                    products = products.order_by('-products_options__stock')
+                elif sort == "높은 가격 순":
+                    products = products.order_by('-products_options__price')
+                elif sort == "낮은 가격 순":
+                    products = products.order_by('products_options__price')
+
+            result = [{
+                "sub_category_id"         : product.sub_category.id,
+                "sub_category_name"       : product.sub_category.name,
+                "sub_category_description": product.sub_category.description,
+                "products"                : {
+                        "product_name"          : product.name,
+                        "product_description"   : product.description,
+                        "product_ingredient_etc": product.ingredients_etc,
+                        "product_id"            : product.id,
+                        "product_detail"        : [
+                            {
+                                "product_option_id" : product_option.id,
+                                "size"              : product_option.size,
+                                "price"             : product_option.price,
+                            } for product_option in product.products_options.all()
+                        ],
+                        "key_ingredient": [
+                        key_ingredient.ingredient.name for key_ingredient in product.product_key_ingredient.all()
+                        ],
+                        "skin_type" : [
+                        skin_type.skin.name for skin_type in product.product_skin_type.all()
+                        ],
+                    }
+                } for product in products]
+
             return JsonResponse({"message": result}, status=200)
         except KeyError:
             return JsonResponse({"message": "KEY_ERROR"}, status=400)
-        except Exception as e:
-            return JsonResponse({"message": f"{e}"}, status=400)
+        except SubCategory.DoesNotExist:
+            return JsonResponse({"message": "NO_CATEGORY_FOUND"}, status=400)
 
 class ProductView(View):
     def get(self, request, product_id):
@@ -142,6 +106,7 @@ class ProductView(View):
                 "product_id"              : product.id,
                 "product_detail"          : [
                     {
+                        "product_option_id" : product_option.id,
                         "size"      : product_option.size,
                         "price"     : product_option.price,
                     } for product_option in product.products_options.all()
@@ -169,85 +134,4 @@ class ProductView(View):
         except KeyError:
             return JsonResponse({"message": "KEY_ERROR"}, status=400)
         except Product.DoesNotExist:
-            return JsonResponse({"message": "PROUDCT_DOES_NOT_EXIST"}, status=400)
-=======
-=======
->>>>>>> 798c0e181ead8e286d04d738225b1d09b9491ea1
-                        "name"             : product.name,
-                        "description"      : product.description,
-                        "ingredients_etc"  : product.ingredients_etc,
-                        "sub_category_id"  : product.sub_category.id,
-                        "sub_category_name": product.sub_category.name,
-                        "product_detail"   : [
-                            {
-                                "size"      : product_option.size,
-                                "price"     : product_option.price,
-                                "product_id": product.id
-                            } for product_option in product.products_options.all()
-                        ] 
-                    }
-                )
-            return JsonResponse({"message": requested_sub_category_products}, status=200)
-        except KeyError as e:
-            return JsonResponse({"message":"KEY_ERROR"}, status=400)
-        except:
-            return JsonResponse({"message":"FAILED"}, status=400)
-
-
-class ProductView(View):
-    def post(self, request):
-        data = json.load(request.body)
-
-        try:
-            name            = data["name"]
-            description     = data["description"]
-            ingredients_etc = data["ingredients_etc"]
-            sub_category_id = data["sub_category_id"]
-
-            MainCategory.objects.create(
-                name            = name,
-                description     = description,
-                ingredients_etc = ingredients_etc,
-                sub_category_id = sub_category_id
-            )
-            return JsonResponse({"message":"SUCCESS"}, status=201)
-        except KeyError as e:
-            return JsonResponse({"message":"KEY_ERROR"}, status=400)
-        except:
-            return JsonResponse({"message":"FAILED"}, status=400)  
-    
-    def get(self, request, product_id):
-        try:
-            requested_product    = Product.objects.get(id=product_id)
-            requested_product_detail = [
-                {
-                    "name"             : requested_product.name,
-                    "desciprtion"      : requested_product.description,
-                    "ingredients_etc"  : requested_product.ingredients_etc,
-                    "sub_category_id"  : requested_product.sub_category.id,
-                    "sub_category_name": requested_product.sub_category.name,
-                    "product_detail"   : [
-                        {
-                            "size"      : product_option.size,
-                            "price"     : product_option.price,
-                            "product_id": requested_product.id
-                        } for product_option in requested_product.products_options.all()
-                    ],
-                    "key_ingredient"   : [
-                        {
-                            "name": key_ingredient.ingredient.name
-                        } for key_ingredient in requested_product.product_key_ingredient.all()
-                    ],
-                    "skin_type"        : [
-                        {
-                            "name": skin_type.skin.name
-                        } for skin_type in requested_product.product_skin_type.all()
-                    ],
-                }
-            ]
-            return JsonResponse({"message": requested_product_detail}, status=200)
-        except KeyError as e:
-            return JsonResponse({"message":"KEY_ERROR"}, status=400)
-        except:
-            return JsonResponse({"message":"FAILED"}, status=400)
->>>>>>> e4d43012ba5cfe4b8fb8d5787b210d8d221fa386
+            return JsonResponse({"message": "NO_PRODUCT_FOUND"}, status=400)

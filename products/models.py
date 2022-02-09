@@ -40,23 +40,19 @@ class ProductOption(Base):
         db_table = 'products_options'
 
 class ProductIngredient(Base):
-<<<<<<< HEAD
     ingredient = models.ForeignKey(KeyIngredient, on_delete=models.CASCADE, related_name='key_ingredient')
-=======
-    ingredient = models.ForeignKey(KeyIngredient, on_delete=models.CASCADE, related_name='ingredient_id')
->>>>>>> 798c0e181ead8e286d04d738225b1d09b9491ea1
     product    = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='product_key_ingredient')
 
     class Meta:
         db_table = 'products_ingredients'
 
 class ProductUsage(Base):
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='products_usages')
-    dosage  = models.CharField(max_length=250, blank=True)
-    texture = models.CharField(max_length=100, blank=True)
-    aroma   = models.CharField(max_length=100, blank=True)
+    product     = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='products_usages')
+    dosage      = models.CharField(max_length=250, blank=True)
+    texture     = models.CharField(max_length=100, blank=True)
+    aroma       = models.CharField(max_length=100, blank=True)
     description = models.TextField(blank=True)
-    image_url = models.URLField(max_length=250, null=True)
+    image_url   = models.URLField(max_length=250, null=True)
 
     class Meta:
         db_table = 'products_usages'
@@ -69,11 +65,7 @@ class Skintype(Base):
 
 class ProductSkintype(Base):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='product_skin_type')
-<<<<<<< HEAD
     skin    = models.ForeignKey(Skintype, on_delete=models.CASCADE, related_name="skin_type")
-=======
-    skin    = models.ForeignKey(Skintype, on_delete=models.CASCADE)
->>>>>>> 798c0e181ead8e286d04d738225b1d09b9491ea1
 
     class Meta:
         db_table = 'products_skintypes'

@@ -16,12 +16,13 @@ def confirm_login(func) :
         try :
             token   = request.headers.get("Authorization", None)
             if token :
-                user_token    = jwt.decode(token,SECRET_KEY,algorithms= ALGORITHM)
-                user          = User.objects.get(id = user_token['id'])
-                request.user  = user
+                user_token       = jwt.decode(token,SECRET_KEY,algorithms= ALGORITHM)
+                user             = User.objects.get(id = user_token['id'])
+                request.user     = user
                 kargs['user_id'] = user_token['id']
                 return func(self, request,*args, **kargs)
             return JsonResponse({"message" : "NEED_LOGIN"}, status = 401)
+        
         except User.DoesNotExist :
             return JsonResponse({"message" : "INVALID_USER"}, status = 401)
         except KeyError :
@@ -35,8 +36,8 @@ def confirm_login(func) :
 def validate_product(func) :
     def wrapper(self, request,*args, **kargs):
         try :
-            data = json.loads(request.body)
-            option_id = data['option_id']
+            data        = json.loads(request.body)
+            option_id   = data['option_id']
 
             if not ProductOption.objects.filter(id = option_id).exists() :
                 return JsonResponse({"message" : "INVALID_PRODUCT"}, status=404)
@@ -81,6 +82,7 @@ def validate_cart(func) :
                 ).exists() :
                 return JsonResponse({"message" : "NOT_IN_CART"},status = 404)
             return func(self, request, *args, **kargs)
+        
         except NameError :
             return JsonResponse({"message" : "INVALID_PARA"},status = 400)
     return wrapper

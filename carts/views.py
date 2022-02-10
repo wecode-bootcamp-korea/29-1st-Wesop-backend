@@ -1,12 +1,10 @@
 import json
-from tokenize import Name
 
 from django.http import JsonResponse
 from django.views import View
 from django.db.models import F
 
 from carts.models import Cart
-from products.models import ProductOption
 
 from .utils  import validate_quantity, validate_product , confirm_login, validate_cart
 
@@ -32,7 +30,6 @@ class CartView(View):
             result['result'] = "SUCCESS"
         except KeyError :
             return JsonResponse(result, status = 400)
-        ## 쿼리 조회 에러 출력
         return JsonResponse(result, status = 200)
     
     @confirm_login
@@ -62,9 +59,9 @@ class CartView(View):
                 "count"      : item.quantity,
                 "price"      : int(item.product.price)
             }
-
-            result["product"] = product
-            result["result"] = "SUCCESS"
+            result["product"]   = product
+            result["result"]    = "SUCCESS"
+            
             return JsonResponse(result,status= 201)
         except KeyError :
             return JsonResponse({"message" : "KEY_ERROR"},status= 400)
@@ -102,8 +99,8 @@ class CartView(View):
     def delete(self, request, *args,**kargs) :
         try :
             success  = Cart.objects.filter(
-                user_id=    kargs['user_id'],
-                product_id= kargs['option_id']
+                user_id     = kargs['user_id'],
+                product_id  = kargs['option_id']
             ).delete()
             
             result = dict()

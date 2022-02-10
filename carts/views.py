@@ -23,10 +23,18 @@ class CartView(View):
                     "name"       : item.product.product.name,
                     "size"       : item.product.size,
                     "count"      : item.quantity,
-                    "price"      : int(item.product.price)
+                    "price"      : int(item.product.price),
+                    'option'     : [ ## 프론트 요청 리팩토링시 삭제 예정
+                       {'value' : 1},
+                       {'value' : 2},
+                       {'value' : 3},
+                       {'value' : 4},
+                       {'value' : 5}, 
+                    ] 
                 }for item in cart_items
             ]
             result['products'] = products
+
             result['result'] = "SUCCESS"
         except KeyError :
             return JsonResponse(result, status = 400)
@@ -88,7 +96,7 @@ class CartView(View):
                 result["result"]    = "SUCCEESS"
                 return JsonResponse(result,status= 201)
             
-            result["result"]        = "SUCCEESS"
+            result["result"]        = "SUCCESS"
             return JsonResponse(result,status= 201)
         
         except KeyError :

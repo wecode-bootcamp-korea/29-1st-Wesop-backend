@@ -22,7 +22,7 @@ def validate_email(func):
         try :
             data = json.loads(request.body)
             if not re.fullmatch(REGEX_EMAIL, data["email"]) : 
-                return JsonResponse({'message' : 'INVALID_EMIAL'}, status = 401)
+                return JsonResponse({'message' : 'INVALID_EMAIL'}, status = 401)
         except KeyError :
             return JsonResponse({"message" : "KEY_ERROR"}, status = 400)
         except json.JSONDecodeError :
@@ -53,10 +53,11 @@ class EmailValidView (View):
     def post(self, request):
         data = json.loads(request.body)
         
-        if User.objects.filter(email = data["email"]).exists() : 
-            return JsonResponse({"message" : "ALREADY_JOIN_USER"}, status = 404)
+        if not User.objects.filter(email = data['email']).exists() : 
+            return JsonResponse({"message" : "JOIN_POSSIBLE", "sign_in" : 0 }, status  = 200)
         
-        return JsonResponse({"message" : "JOIN_POSSIBLE"}, status  = 200)
+        return JsonResponse({"message" : "ALREADY_JOIN_USER", "sign_in" : 1 }, status = 404)
+        
 
 class SignUpView (View) :
     @validate_email
@@ -104,6 +105,6 @@ class LoginView (View) :
             return JsonResponse({"message": "KEY_ERROR"}, status = 400)
 
         except User.DoesNotExist :
-            return JsonResponse({"message ": "NO_USER"}, status = 404)
+            return JsonResponse({"message": "NO_USER"}, status = 404)
         except json.JSONDecodeError:
             return JsonResponse({"message" : "INVALID_REQUEST_BODY"}, status = 400)
